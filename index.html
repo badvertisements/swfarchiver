@@ -1,0 +1,63 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Flash Ad Player</title>
+  <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    #flash-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <div id="flash-container"></div>
+
+  
+<script>
+  function getQueryParam(param) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param);
+  }
+
+  const swf = getQueryParam("swf");
+  const width = parseInt(getQueryParam("width")) || 550;
+  const height = parseInt(getQueryParam("height")) || 400;
+
+  const container = document.getElementById("flash-container");
+  container.style.width = width + "px";
+  container.style.height = height + "px";
+
+  window.RufflePlayer = window.RufflePlayer || {};
+  window.RufflePlayer.config = {
+    autoplay: "on",
+    unmuteOverlay: false
+  };
+
+  window.addEventListener("load", () => {
+    const ruffle = window.RufflePlayer.newest();
+    const player = ruffle.createPlayer();
+    container.appendChild(player);
+    player.style.width = width + "px";
+    player.style.height = height + "px";
+    player.load(swf).then(() => {
+      if (player.play) player.play();
+    });
+  });
+</script>
+
+</body>
+</html>

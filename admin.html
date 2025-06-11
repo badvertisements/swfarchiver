@@ -1,0 +1,773 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Flash Archiver</title>
+<style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      font-family: "Comic Sans MS", Tahoma, sans-serif;
+      overflow: hidden;
+    }
+
+    .top-panel {
+      flex: 0 0 auto;
+      padding: 0.5rem 1rem;
+    }
+
+    .main-panel {
+      flex: 1 1 auto;
+      display: flex;
+      overflow: hidden;
+      gap: 20px;
+      padding: 10px;
+      min-height: 0;
+    }
+
+    .form-panel {
+      flex: 0 0 400px;
+      display: flex;
+      flex-direction: column;
+      padding: 1vh;
+      height: 100%;
+    }
+
+    .form-panel > * {
+      font-size: clamp(0.8rem, 1.2vh, 1.1rem);
+      margin-bottom: clamp(0.5vh, 1vh, 1rem);
+    }
+
+    .form-panel h3 {
+      margin: 0.5vh 0 0.5vh;
+      font-size: clamp(1rem, 1.8vh, 1.3rem);
+    }
+
+    .form-panel label {
+      font-size: clamp(0.85rem, 1.4vh, 1.1rem);
+      margin-bottom: 0.5vh;
+    }
+
+    .form-panel input,
+    .form-panel select,
+    .form-panel button,
+    .form-panel textarea {
+      padding: 0.5vh;
+      width: 100%;
+    }
+
+    .form-panel button {
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+      padding: 0.5em;
+      display: block;
+      text-decoration: none;
+    }
+
+      position: relative;
+      padding: 2vh;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5em;
+      min-height: 100px;
+      text-align: center;
+    }
+
+    #dropzone-message, #dropzone-status {
+      font-weight: bold;
+      width: 100%;
+      text-align: center;
+    }
+
+    #dropzone-status {
+      padding: 0.5em;
+      transition: opacity 0.3s ease;
+      opacity: 0;
+      visibility: hidden;
+      height: auto;
+      min-height: 1.8em;
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    .preview-panel {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 1em;
+      overflow: auto;
+    }
+
+    #preview {
+      margin-top: 10px;
+      border: 1px solid #ccc;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .button-float {
+      position: absolute;
+      top: 80px;
+      right: 30px;
+      z-index: 1000;
+      display: flex;
+      gap: 0.5em;
+    }
+
+    .button-float img {
+      height: 1em;
+      vertical-align: middle;
+      margin-right: 0.4em;
+    }
+
+    .theme-controls {
+      position: absolute;
+      top: 80px;
+      right: 560px;
+      z-index: 1001;
+      display: flex;
+      gap: 0.5em;
+      align-items: center;
+    }
+
+    .theme-controls select,
+    .theme-controls .marquee-toggle {
+      font-size: 0.8rem;
+      padding: 0.3em;
+    }
+  
+
+    .dropzone {
+      position: relative;
+      border: 2px dashed #aaa;
+      padding: 2vh;
+      border-radius: 6px;
+      background-color: #f0f0f0;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5em;
+      min-height: 100px;
+      text-align: center;
+    }
+
+    .dropzone.dragover {
+      background-color: #e0eaff;
+      border-color: #339af0;
+    }
+    
+
+.button-float a {
+  display: inline-block;
+  font-size: 0.95rem;
+  font-weight: bold;
+  font-family: "Comic Sans MS", cursive, sans-serif;
+  text-shadow: 1px 1px #003333;
+  color: white;
+  background: linear-gradient(to bottom, #2ee8e0, #1bbeb7);
+  border: 2px outset #008080;
+  border-radius: 6px;
+  padding: 0.5em 1em;
+  box-shadow: 2px 2px #339999;
+  animation: pulseGlow 3s ease-in-out infinite;
+  text-decoration: none;
+  transition: transform 0.2s;
+}
+
+.button-float a:hover {
+  transform: scale(1.05);
+  background: linear-gradient(to bottom, #48f8f1, #2ee8e0);
+}
+</style>
+<style id="theme-style">
+        html, body {
+          background: linear-gradient(to bottom, #ffccff, #ccffff) !important;
+          color: #000 !important;
+          font-family: "Comic Sans MS", Tahoma, sans-serif !important;
+        font-size: 0.95rem !important;
+        }
+        marquee {
+          font-family: "Comic Sans MS", cursive;
+          font-size: 1.2rem;
+          color: #ff00cc;
+          font-weight: bold;
+          background: #ffffcc;
+          padding: 0.25rem 1rem;
+          border: 2px dashed #cc00ff;
+          
+        }
+        .top-panel {
+          font-size: 0.95rem !important;
+          background: #fff8ff !important;
+          border-bottom: 2px dashed #cc00ff !important;
+        }
+        .form-panel, .preview-panel {
+          background-color: #ffffffcc !important;
+          border: 3px double #9933ff !important;
+          box-shadow: 4px 4px #9999ff !important;
+        }
+        .form-panel input,
+        .form-panel select,
+        .form-panel button,
+        .form-panel textarea {
+          background-color: #ffffcc !important;
+          border: 2px solid #ff66cc !important;
+        }
+        .form-panel button {
+          background: linear-gradient(to bottom, #ff99ff, #ff3399) !important;
+          color: white !important;
+          border: 2px outset #ff00cc !important;
+          text-shadow: 1px 1px #990099 !important;
+        }
+        .button-float a {
+          background: linear-gradient(to bottom, #2ee8e0, #1bbeb7) !important;
+          border: 2px outset #008080 !important;
+          color: white !important;
+          text-shadow: 1px 1px #003333 !important;
+          box-shadow: 2px 2px #339999 !important;
+        }
+      </style>
+<script src="https://unpkg.com/@ruffle-rs/ruffle">
+window.addEventListener("load", autoLoadFirstSWF);
+
+async function autoLoadFirstSWF() {
+  const apiUrl = `https://api.github.com/repos/${user}/${repo}/git/trees/main?recursive=1`;
+  const response = await fetch(apiUrl, { cache: "no-store" });
+  const data = await response.json();
+
+  const swfs = data.tree.filter(file => file.path.startsWith("swf/") && file.path.endsWith(".swf"));
+  const select = document.getElementById("fileList");
+  select.innerHTML = '<option value="">-- Select SWF --</option>';
+
+  swfs.forEach(file => {
+    const option = document.createElement("option");
+    option.value = file.path;
+    option.textContent = file.path;
+    select.appendChild(option);
+  });
+
+  if (swfs.length > 0) {
+    select.value = swfs[0].path;
+    previewFile();
+  }
+}
+
+</script>
+<script>
+    const themes = {
+      geocities: `
+        html, body {
+          background: linear-gradient(to bottom, #ffccff, #ccffff) !important;
+          color: #000 !important;
+          font-family: "Comic Sans MS", Tahoma, sans-serif !important;
+        font-size: 0.95rem !important;
+        }
+        marquee {
+          font-family: "Comic Sans MS", cursive;
+          font-size: 1.2rem;
+          color: #ff00cc;
+          font-weight: bold;
+          background: #ffffcc;
+          padding: 0.25rem 1rem;
+          border: 2px dashed #cc00ff;
+          
+        }
+        .top-panel {
+          font-size: 0.95rem !important;
+          background: #fff8ff !important;
+          border-bottom: 2px dashed #cc00ff !important;
+        }
+        .form-panel, .preview-panel {
+          background-color: #ffffffcc !important;
+          border: 3px double #9933ff !important;
+          box-shadow: 4px 4px #9999ff !important;
+        }
+        .form-panel input,
+        .form-panel select,
+        .form-panel button,
+        .form-panel textarea {
+          background-color: #ffffcc !important;
+          border: 2px solid #ff66cc !important;
+        }
+        .form-panel button {
+          background: linear-gradient(to bottom, #ff99ff, #ff3399) !important;
+          color: white !important;
+          border: 2px outset #ff00cc !important;
+          text-shadow: 1px 1px #990099 !important;
+        }
+        .button-float a {
+          background: linear-gradient(to bottom, #2ee8e0, #1bbeb7) !important;
+          border: 2px outset #008080 !important;
+          color: white !important;
+          text-shadow: 1px 1px #003333 !important;
+          box-shadow: 2px 2px #339999 !important;
+        }
+      `,
+      bubble: `
+        html, body {
+          background: linear-gradient(to bottom, #b0e0e6, #e6f9ff) !important;
+          color: #003366 !important;
+          font-family: Segoe UI, Tahoma, sans-serif !important;
+        }
+        .top-panel, .form-panel, .preview-panel {
+          background: linear-gradient(to bottom, #ffffff, #d7f1f9) !important;
+          border: 2px solid #66ccff !important;
+          color: #003366 !important;
+          box-shadow: inset 0 0 10px #ccf2ff, 0 2px 6px #66ccff !important;
+        }
+        .form-panel input,
+        .form-panel select,
+        .form-panel button,
+        .form-panel textarea {
+          background: linear-gradient(to bottom, #ffffff, #ccf2ff) !important;
+          border: 1px solid #66ccff !important;
+          color: #003366 !important;
+          box-shadow: inset 0 1px 3px #99ddff !important;
+          border-radius: 6px !important;
+        }
+        .form-panel button {
+          background: linear-gradient(to bottom, #a8e4ff, #5cc2f2) !important;
+          color: white !important;
+          border: 2px solid #3399cc !important;
+          text-shadow: 1px 1px #1177aa !important;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.2), inset 0 0 4px #99e6ff !important;
+        }
+        .form-panel button:hover {
+          background: linear-gradient(to bottom, #c6f3ff, #6cd3ff) !important;
+        }
+        .button-float a {
+          background: linear-gradient(to bottom, #99e6ff, #33ccff) !important;
+          border: 2px solid #3399cc !important;
+          color: #003366 !important;
+          text-shadow: 1px 1px #cceeff !important;
+          border-radius: 8px !important;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.25), inset 0 0 6px #cceeff !important;
+        }
+        .button-float a:hover {
+          background: linear-gradient(to bottom, #c6f3ff, #6cd3ff) !important;
+        }
+        marquee {
+          background: #e0f8ff !important;
+          color: #005577 !important;
+          border: 2px solid #66ccff !important;
+        }
+        #dropzone-message, #dropzone-status {
+          color: #006699 !important;
+        }
+`,
+      darkglow: `
+        html, body {
+          background: linear-gradient(to bottom, #0e0e0e, #1c1c1c) !important;
+          color: #b0c978 !important;
+          font-family: Tahoma, sans-serif !important;
+        }
+        marquee {
+          background: #121812 !important;
+          color: #cfe8a8 !important;
+          border: 2px solid #7fa24b !important;
+        }
+        .top-panel {
+          font-size: 0.95rem !important;
+        }
+        .top-panel, .form-panel, .preview-panel {
+          background: linear-gradient(to bottom, #202820, #181f18) !important;
+          border: 2px solid #7fa24b !important;
+          color: #cfe8a8 !important;
+        }
+        .form-panel input,
+        .form-panel select,
+        .form-panel button,
+        .form-panel textarea {
+          background-color: #101810 !important;
+          border: 2px solid #a5ff66 !important;
+          color: #cfe8a8 !important;
+        }
+        .form-panel button {
+          background: linear-gradient(to bottom, #3c4c3c, #5f794f) !important;
+          color: #eef9d5 !important;
+          border: 2px solid #7fa24b !important;
+          text-shadow: none !important;
+        }
+        .button-float a {
+          background: linear-gradient(to bottom, #3c4c3c, #5f794f) !important;
+          border: 2px solid #7fa24b !important;
+          color: #eef9d5 !important;
+          text-shadow: none !important;
+          box-shadow: 0 0 6px #b6ff88 !important;
+        }
+      
+        #dropzone-message, #dropzone-status {
+          color: #6e944c !important;
+        }
+    `,
+        plain: `
+        html, body {
+          background: linear-gradient(to bottom, #f3f3f3, #e9e9e9) !important;
+          color: #222 !important;
+          font-family: sans-serif !important;
+        }
+        marquee {
+          background: #fafafa !important;
+          color: #444 !important;
+          border: 2px solid #ccc !important;
+        }
+        .top-panel {
+          font-size: 0.95rem !important;
+        }
+        .top-panel, .form-panel, .preview-panel {
+          background-color: #ffffff !important;
+          border: 2px solid #cccccc !important;
+          color: #111 !important;
+          box-shadow: 1px 1px 4px #bbb !important;
+        }
+        .form-panel input,
+        .form-panel select,
+        .form-panel button,
+        .form-panel textarea {
+          background-color: #f8f8f8 !important;
+          border: 1px solid #aaa !important;
+          color: #222 !important;
+        }
+        .form-panel button {
+          background: #ddd !important;
+          color: #000 !important;
+          border: 1px solid #888 !important;
+        }
+        .button-float a {
+          background: #e6e6e6 !important;
+          border: 2px solid #a0a0a0 !important;
+          color: #000 !important;
+          text-shadow: none !important;
+          box-shadow: 0 0 6px #c066ff !important;
+        }
+      `
+    };
+
+    function applyTheme(name) {
+      document.getElementById('theme-style').textContent = themes[name];
+    }
+
+    function toggleMarquee() {
+      const marquee = document.querySelector('marquee');
+      if (marquee) marquee.style.display = marquee.style.display === 'none' ? 'block' : 'none';
+    }
+  
+window.addEventListener("load", autoLoadFirstSWF);
+
+async function autoLoadFirstSWF() {
+  const apiUrl = `https://api.github.com/repos/${user}/${repo}/git/trees/main?recursive=1`;
+  const response = await fetch(apiUrl, { cache: "no-store" });
+  const data = await response.json();
+
+  const swfs = data.tree.filter(file => file.path.startsWith("swf/") && file.path.endsWith(".swf"));
+  const select = document.getElementById("fileList");
+  select.innerHTML = '<option value="">-- Select SWF --</option>';
+
+  swfs.forEach(file => {
+    const option = document.createElement("option");
+    option.value = file.path;
+    option.textContent = file.path;
+    select.appendChild(option);
+  });
+
+  if (swfs.length > 0) {
+    select.value = swfs[0].path;
+    previewFile();
+  }
+}
+
+</script>
+</head>
+<body>
+<marquee behavior="scroll" direction="left">✨🔥 Welcome to the Flash Archiver!!!!! ✨🔥</marquee>
+<div class="top-panel">
+<h2>Flash Archiver</h2>
+<p><i>SWF Archival and Embedding Application</i></p>
+</div>
+<div class="main-panel">
+<div class="form-panel">
+<label>GitHub Personal Access Token:</label>
+<input id="token" placeholder="ghp_..." type="password"/>
+<h3>Upload New SWF</h3>
+<div class="dropzone" id="dropzone">
+<div id="dropzone-message">Drop SWF here or click to browse</div>
+<div id="dropzone-status"></div>
+</div>
+<input id="fileInput" style="display:none;" type="file"/>
+<label>Optional Rename:</label>
+<input id="renameInput" placeholder="example-ad.swf" type="text"/>
+<button onclick="uploadFile()">Upload</button>
+<h3>View SWFs</h3>
+<button onclick="loadFiles()">Refresh List</button>
+<select id="fileList" onchange="previewFile()"><option value="">-- Select SWF --</option></select>
+<h3>Embed Code</h3>
+<textarea id="embedCode" readonly=""></textarea>
+<button onclick="copyEmbed()">Copy Embed Code</button>
+</div>
+<div class="preview-panel">
+<h3>Preview</h3>
+<div id="preview"></div>
+</div>
+</div>
+<div class="theme-controls">
+<label style="font-size: 0.8rem; font-weight: bold;">Themes:</label><select onchange="applyTheme(this.value)"><option value="geocities">GeoCities</option><option value="darkglow">Dark Glow</option><option value="bubble">Bubble</option><option value="plain">Plain</option></select>
+<button class="marquee-toggle" onclick="toggleMarquee()">Toggle Marquee</button>
+</div>
+<div class="button-float">
+<a href="https://github.com/FlashAdArchiver/swfarchiver" target="_blank">
+<img alt="GitHub" src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg"/> GitHub Repo
+    </a>
+<a href="https://ko-fi.com/K3K11GA733" target="_blank">
+<img alt="Ko-fi" src="https://storage.ko-fi.com/cdn/cup-border.png"/> Support me
+    </a>
+</div>
+<script>
+
+const user = "FlashAdArchiver";
+const repo = "swfarchiver";
+
+const dropzoneMessage = document.getElementById("dropzone-message");
+
+function normalizeFilename(name) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + ".swf";
+}
+
+function resetDropzoneMessage() {
+  dropzoneMessage.textContent = "Drop SWF here or click to browse";
+}
+
+function showWaitingFilename(fileName) {
+  dropzoneMessage.textContent = `📁 Waiting to upload: ${fileName}`;
+}
+
+function showStatus(message, success = true, duration = 4000) {
+  const statusBox = document.getElementById("dropzone-status");
+  statusBox.textContent = "";
+  statusBox.style.visibility = "visible";
+  statusBox.style.backgroundColor = success ? "limegreen" : "crimson";
+  statusBox.style.opacity = "1";
+
+  dropzoneMessage.textContent = "";
+
+  let i = 0;
+  function typeChar() {
+    if (i < message.length) {
+      statusBox.textContent += message.charAt(i);
+      i++;
+      setTimeout(typeChar, 30);
+    }
+  }
+  typeChar();
+
+  if (duration > 0) {
+    setTimeout(() => {
+      statusBox.style.opacity = "0";
+      setTimeout(() => {
+        statusBox.style.visibility = "hidden";
+      }, 300);
+    }, duration);
+  }
+}
+
+function isValidSWF(file) {
+  const nameOK = file.name.toLowerCase().endsWith(".swf");
+  const typeOK = file.type === "application/x-shockwave-flash" || file.type === "";
+  return nameOK && typeOK;
+}
+
+async function uploadFile(fileOverride) {
+  const token = document.getElementById("token").value.trim();
+  const fileInput = document.getElementById("fileInput");
+  const renameInput = document.getElementById("renameInput").value.trim();
+  const file = fileOverride || fileInput.files[0];
+
+  if (!token || !file) {
+    alert("Please select file and enter token.");
+    return;
+  }
+
+  if (!isValidSWF(file)) {
+    alert("Only valid .swf files may be uploaded.");
+    return;
+  }
+
+  showStatus("Uploading...", true, 0);
+
+  let filename = renameInput ? normalizeFilename(renameInput.replace(/\.swf$/i, '')) : file.name;
+  const reader = new FileReader();
+  reader.onload = async function () {
+    const content = btoa(reader.result);
+    const url = `https://api.github.com/repos/${user}/${repo}/contents/swf/${filename}`;
+    const payload = { message: "Add SWF via CMS", content: content };
+
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: { "Authorization": "token " + token, "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (response.ok) {
+      showStatus("Upload successful!");
+      resetDropzoneMessage();
+      fileInput.value = "";
+      loadFiles();
+    } else {
+      const errorData = await response.json();
+      showStatus(errorData.message.includes("sha") ? "File already exists." : "Error: " + errorData.message, false);
+    }
+  };
+  reader.readAsBinaryString(file);
+}
+
+async function loadFiles() {
+  const apiUrl = `https://api.github.com/repos/${user}/${repo}/git/trees/main?recursive=1`;
+  const response = await fetch(apiUrl, { cache: "no-store" });
+  const data = await response.json();
+
+  const select = document.getElementById("fileList");
+  select.innerHTML = '<option value="">-- Select SWF --</option>';
+  data.tree.forEach(file => {
+    if (file.path.endsWith('.swf')) {
+      const option = document.createElement("option");
+      option.value = file.path;
+      option.textContent = file.path;
+      select.appendChild(option);
+    }
+  });
+}
+
+function previewFile() {
+  const swfFile = document.getElementById("fileList").value;
+  if (!swfFile) return;
+
+  const container = document.getElementById("preview");
+  container.innerHTML = "";
+  const ruffle = window.RufflePlayer.newest();
+  const player = ruffle.createPlayer();
+  container.appendChild(player);
+  player.load(swfFile);
+
+  player.addEventListener("loadedmetadata", () => {
+    const width = player.metadata.width || 550;
+    const height = player.metadata.height || 400;
+    container.style.width = width + "px";
+    container.style.height = height + "px";
+    player.style.width = width + "px";
+    player.style.height = height + "px";
+
+    const encodedPath = encodeURIComponent(swfFile);
+    const embed = `<iframe src="https://${user}.github.io/${repo}/index.html?swf=${encodedPath}&width=${width}&height=${height}" width="${width}" height="${height}" frameborder="0" scrolling="no"></iframe>`;
+    document.getElementById("embedCode").value = embed;
+  });
+}
+
+function copyEmbed() {
+  const textarea = document.getElementById("embedCode");
+  textarea.select();
+  document.execCommand("copy");
+  alert("Embed code copied!");
+}
+
+document.getElementById("fileInput").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  const token = document.getElementById("token").value.trim();
+  if (!token || !file) {
+    alert("Enter GitHub token first.");
+    e.target.value = "";
+    resetDropzoneMessage();
+    return;
+  }
+  if (!isValidSWF(file)) {
+    alert("Only .swf files are allowed.");
+    e.target.value = "";
+    return;
+  }
+
+  showWaitingFilename(file.name);
+  document.getElementById("dropzone-status").style.visibility = "hidden";
+  document.getElementById("dropzone-status").style.opacity = "0";
+});
+
+document.getElementById("dropzone").addEventListener("click", () => {
+  document.getElementById("fileInput").click();
+});
+
+document.getElementById("dropzone").addEventListener("dragover", (e) => {
+  e.preventDefault();
+  e.currentTarget.classList.add("dragover");
+});
+
+document.getElementById("dropzone").addEventListener("dragleave", (e) => {
+  e.currentTarget.classList.remove("dragover");
+});
+
+document.getElementById("dropzone").addEventListener("drop", (e) => {
+  e.preventDefault();
+  e.currentTarget.classList.remove("dragover");
+
+  const token = document.getElementById("token").value.trim();
+  if (!token) {
+    alert("Please enter your GitHub token before uploading.");
+    return;
+  }
+
+  const files = Array.from(e.dataTransfer.files);
+  const swfFile = files.find(f => isValidSWF(f));
+  if (swfFile) {
+    showWaitingFilename(swfFile.name);
+    document.getElementById("dropzone-status").style.visibility = "hidden";
+    document.getElementById("dropzone-status").style.opacity = "0";
+    uploadFile(swfFile);
+  } else {
+    alert("Only .swf files may be uploaded.");
+  }
+});
+
+
+window.addEventListener("load", autoLoadFirstSWF);
+
+async function autoLoadFirstSWF() {
+  const apiUrl = `https://api.github.com/repos/${user}/${repo}/git/trees/main?recursive=1`;
+  const response = await fetch(apiUrl, { cache: "no-store" });
+  const data = await response.json();
+
+  const swfs = data.tree.filter(file => file.path.startsWith("swf/") && file.path.endsWith(".swf"));
+  const select = document.getElementById("fileList");
+  select.innerHTML = '<option value="">-- Select SWF --</option>';
+
+  swfs.forEach(file => {
+    const option = document.createElement("option");
+    option.value = file.path;
+    option.textContent = file.path;
+    select.appendChild(option);
+  });
+
+  if (swfs.length > 0) {
+    select.value = swfs[0].path;
+    previewFile();
+  }
+}
+
+</script>
+</body>
+</html>
