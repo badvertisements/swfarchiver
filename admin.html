@@ -543,8 +543,8 @@ async function autoLoadFirstSWF() {
 </div>
 <script>
 
-const user = "FlashAdArchiver";
-const repo = "swfarchiver";
+const user = window.location.hostname.split(".github.io")[0];
+const repo = window.location.pathname.split("/").filter(Boolean)[0] || "swfarchiver";
 
 const dropzoneMessage = document.getElementById("dropzone-message");
 
